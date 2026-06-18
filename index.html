@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft - Login</title>
+    <style>
+        /* Importando a fonte clássica do Minecraft */
+        @import url('https://fonts.cdnfonts.com/css/minecraftia');
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Minecraftia', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), 
+                        url('https://images.alphacoders.com/134/1341147.png') no-repeat center center fixed;
+            background-size: cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .login-container {
+            background-color: rgba(28, 28, 28, 0.9);
+            border: 4px solid #4a4a4a;
+            padding: 30px;
+            width: 360px;
+            box-shadow: 0px 0px 20px rgba(0,0,0,0.8);
+            text-align: center;
+            position: relative;
+        }
+
+        h2 {
+            color: #55FF55;
+            text-shadow: 2px 2px #003300;
+            margin-bottom: 25px;
+            font-size: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #AAAAAA;
+            font-size: 12px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #000;
+            border: 2px solid #555;
+            color: #fff;
+            font-family: 'Minecraftia', sans-serif;
+            font-size: 14px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #55FF55;
+        }
+
+        /* --- Estilo do CAPTCHA de Crafting --- */
+        .captcha-container {
+            background-color: #2c2c2c;
+            border: 2px solid #1a1a1a;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            position: relative;
+            transition: border-color 0.3s ease;
+        }
+
+        .captcha-title {
+            font-size: 10px;
+            color: #FF5555;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px #330000;
+        }
+
+        .crafting-wrapper {
+            position: relative;
+        }
+
+        .crafting-zone {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #8f8f8f;
+            border: 3px solid #3c3c3c;
+            padding: 10px;
+            box-shadow: inset -2px -2px #555, inset 2px 2px #fff;
+            transition: transform 0.5s ease, opacity 0.5s ease;
+        }
+
+        .grid-3x3 {
+            display: grid;
+            grid-template-columns: repeat(3, 40px);
+            grid-gap: 4px;
+        }
+
+        .cell {
+            width: 40px;
+            height: 40px;
+            background-color: #8b8b8b;
+            border: 3px solid #373737;
+            box-shadow: inset -2px -2px #555, inset 2px 2px #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .arrow {
+            font-size: 24px;
+            color: #373737;
+            text-shadow: 1px 1px #fff;
+        }
+
+        .inventory {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            background: #4a4a4a;
+            padding: 8px;
+            border: 2px dashed #8b8b8b;
+            min-height: 40px;
+            transition: opacity 0.3s ease;
+        }
+
+        .item {
+            width: 34px;
+            height: 34px;
+            cursor: grab;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            user-select: none;
+        }
+
+        .item img, .cell img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            image-rendering: pixelated; 
+            image-rendering: crisp-edges;
+            pointer-events: none;
+        }
+
+        .item:active {
+            cursor: grabbing;
+        }
+
+        /* --- Botão de Login --- */
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: #666;
+            border: 3px solid #333;
+            box-shadow: inset -2px -2px #333, inset 2px 2px #999;
+            color: #aaa;
+            font-family: 'Minecraftia', sans-serif;
+            font-size: 14px;
+            cursor: not-allowed;
+        }
+
+        .btn-login.active {
+            background-color: #55FF55;
+            border-color: #00AA00;
+            box-shadow: inset -2px -2px #006600, inset 2px 2px #99FF99;
+            color: #003300;
+            cursor: pointer;
+            text-shadow: 1px 1px #55FF55;
+        }
+
+        .btn-login.active:hover {
+            background-color: #44dd44;
+        }
+
+        /* --- Animações da Picareta Gigante e Destruição --- */
+        .giant-pickaxe {
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 120px;
+            height: 120px;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0;
+            transform: rotate(45deg);
+            image-rendering: pixelated;
+        }
+
+        @keyframes strike {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) rotate(45deg);
+            }
+            50% {
+                transform: translate(-110px, 110px) rotate(-15deg);
+            }
+            70% {
+                transform: translate(-105px, 105px) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-105px, 105px) rotate(0deg);
+            }
+        }
+
+        .animate-pickaxe {
+            animation: strike 0.8s ease-in-out forwards;
+        }
+
+        .shattered {
+            animation: explode 0.6s ease-in forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(0.8) translate(-20px, 30px) rotate(-10deg);
+                filter: contrast(2) brightness(0.4);
+            }
+            100% {
+                transform: scale(0) translate(-50px, 100px) rotate(-45deg);
+                opacity: 0;
+            }
+        }
+
+        /* Mensagem de Verificado estilo Conquista */
+        .achievement-unlocked {
+            display: none;
+            background-color: #111;
+            border: 2px solid #2a2a2a;
+            padding: 10px;
+            color: #fff;
+            font-size: 11px;
+            text-align: left;
+            box-shadow: 3px 3px 0px #000;
+            position: relative;
+            margin: 15px 0;
+            border-left: 4px solid #55FF55;
+        }
+
+        .achievement-unlocked img {
+            width: 24px;
+            height: 24px;
+            float: left;
+            margin-right: 10px;
+            image-rendering: pixelated;
+        }
+
+        .achievement-title {
+            color: #FFFF55;
+            font-weight: bold;
+            margin: 0;
+        }
+        .achievement-desc {
+            color: #fff;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <h2>MINECRAFT LOGIN</h2>
+        
+        <form id="loginForm" onsubmit="event.preventDefault(); alert('Login efetuado com sucesso! Seus diamantes estão seguros.');">
+            <div class="input-group">
+                <label>USUÁRIO OU EMAIL</label>
+                <input type="text" required placeholder="Steve">
+            </div>
+            
+            <div class="input-group">
+                <label>SENHA</label>
+                <input type="password" required placeholder="******">
+            </div>
+
+            <div class="captcha-container" id="captchaBox">
+                <div class="captcha-title" id="captchaTitle">PROVE QUE NÃO É UM ZUMBI: CRIE UMA PICARETA DE DIAMANTE</div>
+                
+                <div class="crafting-wrapper">
+                    <!-- Picareta Gigante (Imagem inserida via JS) -->
+                    <img id="giantPickaxe" class="giant-pickaxe" alt="Picareta Gigante">
+                    
+                    <div class="crafting-zone" id="craftingZone">
+                        <div class="grid-3x3">
+                            <div class="cell" data-slot="1"></div>
+                            <div class="cell" data-slot="2"></div>
+                            <div class="cell" data-slot="3"></div>
+                            <div class="cell" data-slot="4"></div>
+                            <div class="cell" data-slot="5"></div>
+                            <div class="cell" data-slot="6"></div>
+                            <div class="cell" data-slot="7"></div>
+                            <div class="cell" data-slot="8"></div>
+                            <div class="cell" data-slot="9"></div>
+                        </div>
+
+                        <div class="arrow">➡</div>
+
+                        <div class="cell" id="result-slot"></div>
+                    </div>
+                </div>
+
+                <!-- Inventário (Imagens geradas dinamicamente via JS) -->
+                <div class="inventory" id="inventoryZone"></div>
+            </div>
+
+            <!-- Caixa de Conquista (Imagem inserida via JS) -->
+            <div class="achievement-unlocked" id="achievementBox">
+                <img id="achievementImg" alt="Picareta">
+                <p class="achievement-title">Conquista Adquirida!</p>
+                <p class="achievement-desc">Não é um Zumbi</p>
+            </div>
+
+            <button type="submit" id="loginBtn" class="btn-login" disabled>ENTRAR NO SERVIDOR</button>
+        </form>
+    </div>
+
+    <script>
+        // =========================================================================
+        //  ALTERE OS LINKS ABAIXO PARA AS SUAS IMAGENS (Locais como "./img/foto.png" ou URLs)
+        // =========================================================================
+        const IMAGENS = {
+            picareta: "./img/picareta.webp",
+            diamante: "./img/diamante.webp",
+            graveto:  "./img/stick.webp"
+        };
+        // =========================================================================
+
+        const cells = document.querySelectorAll('.grid-3x3 .cell');
+        const resultSlot = document.getElementById('result-slot');
+        const loginBtn = document.getElementById('loginBtn');
+        
+        const giantPickaxe = document.getElementById('giantPickaxe');
+        const craftingZone = document.getElementById('craftingZone');
+        const inventoryZone = document.getElementById('inventoryZone');
+        const captchaTitle = document.getElementById('captchaTitle');
+        const achievementBox = document.getElementById('achievementBox');
+        const achievementImg = document.getElementById('achievementImg');
+        const captchaBox = document.getElementById('captchaBox');
+
+        let isVerified = false;
+        let boardState = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null, 9: null };
+
+        // Inicializa as imagens configuradas no topo do script
+        function inicializarImagens() {
+            giantPickaxe.src = IMAGENS.picareta;
+            achievementImg.src = IMAGENS.picareta;
+
+            // Criar os itens do inventário dinamicamente com as imagens corretas
+            const estruturaItens = [
+                { id: 'diamante1', type: 'D', src: IMAGENS.diamante, alt: 'Diamante' },
+                { id: 'diamante2', type: 'D', src: IMAGENS.diamante, alt: 'Diamante' },
+                { id: 'diamante3', type: 'D', src: IMAGENS.diamante, alt: 'Diamante' },
+                { id: 'graveto1',  type: 'S', src: IMAGENS.graveto,  alt: 'Graveto' },
+                { id: 'graveto2',  type: 'S', src: IMAGENS.graveto,  alt: 'Graveto' }
+            ];
+
+            estruturaItens.forEach(dado => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                itemDiv.draggable = true;
+                itemDiv.id = dado.id;
+                itemDiv.setAttribute('data-type', dado.type);
+                itemDiv.innerHTML = `<img src="${dado.src}" alt="${dado.alt}">`;
+                
+                itemDiv.addEventListener('dragstart', (e) => {
+                    if (isVerified) return e.preventDefault();
+                    e.dataTransfer.setData('text/plain', e.target.id);
+                });
+
+                inventoryZone.appendChild(itemDiv);
+            });
+        }
+
+        // Executa a montagem do inventário e imagens
+        inicializarImagens();
+
+        // Configuração do Drag and Drop da Grade
+        cells.forEach(cell => {
+            cell.addEventListener('dragover', (e) => e.preventDefault());
+
+            cell.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (isVerified) return;
+
+                const itemId = e.dataTransfer.getData('text/plain');
+                const itemElement = document.getElementById(itemId);
+                
+                if (cell.children.length === 0 && itemElement) {
+                    for (let slot in boardState) {
+                        if (boardState[slot] && document.querySelector(`[data-slot="${slot}"]`).contains(itemElement)) {
+                            boardState[slot] = null;
+                        }
+                    }
+
+                    cell.appendChild(itemElement);
+                    const slot = cell.getAttribute('data-slot');
+                    boardState[slot] = itemElement.getAttribute('data-type');
+                    checkRecipe();
+                }
+            });
+        });
+
+        function checkRecipe() {
+            if (isVerified) return;
+
+            const isPickaxe = 
+                boardState[1] === 'D' && boardState[2] === 'D' && boardState[3] === 'D' &&
+                boardState[4] === null && boardState[5] === 'S' && boardState[6] === null &&
+                boardState[7] === null && boardState[8] === 'S' && boardState[9] === null;
+
+            if (isPickaxe) {
+                isVerified = true;
+                resultSlot.innerHTML = `<img src="${IMAGENS.picareta}" alt="Picareta">`;
+                triggerPickaxeBreak();
+            }
+        }
+
+        function triggerPickaxeBreak() {
+            giantPickaxe.classList.add('animate-pickaxe');
+
+            setTimeout(() => {
+                craftingZone.classList.add('shattered');
+                inventoryZone.style.opacity = '0';
+                captchaTitle.style.color = '#55FF55';
+                captchaTitle.innerText = 'VERIFICAÇÃO CONCLUÍDA!';
+            }, 450);
+
+            setTimeout(() => {
+                craftingZone.style.display = 'none';
+                inventoryZone.style.display = 'none';
+                captchaBox.style.borderColor = '#55FF55';
+                achievementBox.style.display = 'block';
+
+                loginBtn.removeAttribute('disabled');
+                loginBtn.classList.add('active');
+            }, 1050);
+        }
+
+        // Permitir devolver para o inventário
+        inventoryZone.addEventListener('dragover', (e) => e.preventDefault());
+        inventoryZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (isVerified) return;
+
+            const itemId = e.dataTransfer.getData('text/plain');
+            const itemElement = document.getElementById(itemId);
+            
+            if (itemElement) {
+                for (let slot in boardState) {
+                    if (boardState[slot] && document.querySelector(`[data-slot="${slot}"]`).contains(itemElement)) {
+                        boardState[slot] = null;
+                    }
+                }
+                inventoryZone.appendChild(itemElement);
+                checkRecipe();
+            }
+        });
+    </script>
+</body>
+</html>
